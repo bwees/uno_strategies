@@ -3,7 +3,6 @@ from uno import UnoGame, COLORS
 import random
 import matplotlib.pyplot as plt
 
-
 def sim(my_id):
     game = UnoGame(4)
     while game.is_active:
@@ -15,17 +14,20 @@ def sim(my_id):
 
                 playable_colors = []
 
+                # get the next player's card count
+                next_card_count = len(game._player_cycle.view_next().hand)
+
                 # I'm the current player, do cool strategy
                 for i, card in enumerate(player.hand):
                     if game.current_card.playable(card):
-                        if card.color != "black":
+                        if next_card_count == 1:
+                            if "+" in str(card.card_type) or "reverse" in str(card.card_type) or "skip" in str(card.card_type):
+                                playable_colors.append(card)
+                        elif "+" not in str(card.card_type) and "reverse" not in str(card.card_type) and "skip" not in str(card.card_type):
                             playable_colors.append(card)
                 
-                # remove any cards that have a string as card type
-                playable_colors = [card for card in playable_colors if type(card.card_type) != str]
-
                 if playable_colors == []:
-                    # no playable colors, play black
+                    # no playable colors, play random
                     for i, card in enumerate(player.hand):
                         if game.current_card.playable(card):
                             if card.color == 'black':
@@ -35,11 +37,15 @@ def sim(my_id):
                             game.play(player=player_id, card=i, new_color=new_color)
                             break
                 else:
-                    # sort colors by largest card type
-                    playable_colors.sort(key=lambda x: x.card_type, reverse=True)
+                    # pick random card to play
+                    card = random.choice(playable_colors)
                     # play highest color
-                    card_i = player.hand.index(playable_colors[0])
-                    game.play(player=player_id, card=card_i, new_color=None)
+                    card_i = player.hand.index(card)
+                    if card.color == 'black':
+                        new_color = random.choice(COLORS)
+                    else:
+                        new_color = None
+                    game.play(player=player_id, card=card_i, new_color=new_color)
 
 
             else:
@@ -64,11 +70,10 @@ if __name__ == '__main__':
         for i in range(100):
             pID = random.randint(0, 3)
             w.append(sim(pID).player_id == pID)
-
         win_rates.append(w.count(True) / len(w))
 
     # dump win rates to file, one item per line
-    with open('results/highest_first.txt', 'w') as f:
+    with open('results/hold_plus_lookahead.txt', 'w') as f:
         for i in win_rates:
             f.write(str(i) + '\n')
 

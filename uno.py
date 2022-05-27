@@ -321,6 +321,14 @@ class ReversibleCycle:
     def pos(self, value):
         self._pos = value % len(self._items)
 
+    def view_next(self):
+        if self._reverse:
+            return self._items[self.pos - 1]
+        else:
+            try:
+                return self._items[self.pos + 1]
+            except IndexError:
+                return self._items[0]
     def reverse(self):
         """
         Reverse the order of the iterable.

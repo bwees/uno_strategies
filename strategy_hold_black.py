@@ -1,10 +1,9 @@
+from tqdm import tqdm
 from uno import UnoGame, COLORS
 import random
 import matplotlib.pyplot as plt
 
-my_id = 0
-
-def sim():
+def sim(my_id):
     game = UnoGame(4)
     while game.is_active:
         player = game.current_player
@@ -54,15 +53,18 @@ def sim():
 
     return game.winner
 
-win_rates = []
-for i in range(1000):
-    w = []
-    for i in range(100):
-        w.append(sim().player_id)
-    win_rates.append(w.count(0) / len(w))
+if __name__ == '__main__':
+    win_rates = []
+    for i in tqdm(range(1000)):
+        w = []
+        for i in range(100):
+            pID = random.randint(0, 3)
+            w.append(sim(pID).player_id == pID)
 
-# dump win rates to file, one item per line
-with open('results/hold_black.txt', 'w') as f:
-    for i in win_rates:
-        f.write(str(i) + '\n')
+        win_rates.append(w.count(True) / len(w))
+
+    # dump win rates to file, one item per line
+    with open('results/hold_black.txt', 'w') as f:
+        for i in win_rates:
+            f.write(str(i) + '\n')
 
